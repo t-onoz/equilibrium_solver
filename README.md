@@ -1,5 +1,5 @@
 # Generic equilibrium solver for aqueous systems
-Supports
+## Supported
 - acid-base equilibrium
 - complexation
 - precipitation of pure solids
@@ -9,9 +9,9 @@ Supports
   - Davies
   - Truesdell-Jones
  
-Not supported
+## Not supported
 - solid solutions
 - closed system containing gas (e.g. soda can)
 
-Usage
+## Usage
 - please check jupyter notebooks in examples folder.
