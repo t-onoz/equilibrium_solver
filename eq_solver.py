@@ -1,6 +1,4 @@
-"""Generic equilibrium solver for aqueous systems.
-Supports aqueous spieces and pure solid phases.
-Gas phase, solid solution, and activity coefficients are not supported yet."""
+"""Generic equilibrium solver for aqueous systems."""
 from __future__ import annotations
 import logging
 import typing as t
