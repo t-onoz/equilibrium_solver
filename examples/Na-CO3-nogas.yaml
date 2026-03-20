@@ -1,0 +1,56 @@
+activity_model:
+  # available values:
+  #   none, debye_huckel, ex_debye_huckel, davies, truesdell_jones
+  # for ex_debye_huckel, "a" value (in nm) for each species is required
+  # for truesdell_jones, "a" (in nm) and "b" values for each species is required
+  davies
+temperature:
+  # provide in Kelvin
+  298.15
+components:
+  - name: proton
+    base: H+
+    constraint: charge
+    charge: 1
+  - name: carbonate
+    base: CO2aq
+    constraint: total
+    charge: 0
+  - name: sodium
+    base: Na+
+    constraint: direct
+    charge: +1
+species:
+  - name: H+
+    phase: liquid
+  - name: OH-
+    phase: liquid
+  - name: Na+
+    phase: liquid
+  - name: CO2aq
+    phase: liquid
+  - name: HCO3-
+    phase: liquid
+  - name: CO3^2-
+    phase: liquid
+equilibria:
+  - name: water autoionization
+    logK: -14.00
+    DH: 57.0
+    composition:
+      H+: 1
+      OH-: 1
+  - name: CO2 deprotonation 1
+    logK: -6.3
+    DH: 9.2
+    composition:
+      CO2aq: -1
+      H+: 1
+      HCO3-: 1
+  - name: CO2 deprotonation 2
+    logK: -10.33
+    DH: 14.6
+    composition:
+      H+: 1
+      CO3^2-: 1
+      HCO3-: -1
