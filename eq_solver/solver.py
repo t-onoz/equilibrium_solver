@@ -69,21 +69,34 @@ class FitFunc:
         -> np.ndarray | tuple[np.ndarray, pd.DataFrame]:
         """function to optimize.
 
-        Args:
-            x : first `self.specs.n_loga` elements represent log(activity) of free (TOTAL or CHARGE) components.
-                next `self.specs.n_solid` elements represent mole amount of solids.
-                if activity_model != 'none', additional 1 element represents ionic strength.
-            return_all_spc: if False, returns a residual vector.
-                            if True, returns a tuple of (residual vector, DataFrame),
-                            where DataFrame consists of "concentration" and "activity" columns.
+        Variable (x) layout depends on activity_model:
+            if activity_model == 'none':
+                x = [log a_ind, n_solid]
+            else:
+                x = [log a_ind, n_solid, ionic_strength]
+
+            Use `pprint(system.specs)` to determine the expected size.
+
+        return_all_spc: if False, returns a residual vector.
+                        if True, returns a tuple of (residual vector, DataFrame),
+                        where DataFrame consists of "concentration" and "activity" columns.
+        Notes:
+            - activities are in log10 scale
+            - aqueous species concentrations are derived via a = γ c
         """
         system = self.system
         cond = self.cond
         if len(x) != system.specs.n_vars:
             raise ValueError(f'len(x) must be {system.specs.n_vars}, but got x={repr(x)}.')
 
+        # unpack x
+        log_a_independent, n_solid, I = self._unpack_x(x)
+
         # determine γ (activity coefficient) based on the activity model
-        spc_gamma = system.gamma(0.0 if system.activity_model == 'none' else x[-1])
+        if system.activity_model == 'none':
+            spc_gamma = np.ones_like(system.spc_logK, dtype=np.float64)
+        else:
+            spc_gamma = system.gamma(I)
         cpt_gamma = spc_gamma[system.cpt_base_idx]
 
         # initialize log activities of the components
@@ -93,7 +106,7 @@ class FitFunc:
         with np.errstate(divide='ignore'):
             cpt_log_a[_m] = np.maximum(np.log10(cpt_gamma[_m] * cond.values[_m]), -9999)
         # for TOTAL or CHARGE components, log(activity) are taken from x.
-        cpt_log_a[system.cpt_cstr != Constraint.DIRECT] = x[:system.specs.n_loga]
+        cpt_log_a[system.cpt_cstr != Constraint.DIRECT] = log_a_independent
 
         spc_log_a = system.stoichiometry_matrix @ cpt_log_a + system.spc_logK
 
@@ -103,9 +116,7 @@ class FitFunc:
         _m = system.spc_phase == Phase.LIQUID
         spc_c[_m] = 10. ** spc_log_a[_m] / spc_gamma[_m]
         # for solid phases, c values are taken from x.
-        _start = system.specs.n_loga
-        _end = _start + system.specs.n_solid
-        spc_c[system.spc_phase == Phase.SOLID] = x[_start:_end]
+        spc_c[system.spc_phase == Phase.SOLID] = n_solid
         # c vales of gaseous molecules should be kept 0,
         # because we can't determine gas volume.
 
@@ -137,7 +148,7 @@ class FitFunc:
         if system.activity_model == 'none':
             r3 = []
         else:
-            r3 = [np.log10(system.ionic_strength(spc_c)) - np.log10(x[-1]+1e-100)]
+            r3 = [np.log10(system.ionic_strength(spc_c)) - np.log10(I+1e-100)]
 
         r = np.concatenate((r0, r1, r2, r3))
         logger.debug('x=%s', x)
@@ -210,10 +221,17 @@ class FitFunc:
             rmse_threshold: float = 1e-6,
             random_seed: np.random.Generator | int | None=None,
     ) -> SolverResults:
-        """Solves equilibrium problems for a list of different conditions.
-            When RMSE is lower than `rmse_thresh` (default: 1e-6),
-            retries optimization with different initial points.
-            `rng` (Generator, optional) is used when making initial point candidates."""
+        """
+        Solve the equilibrium problem.
+
+        The solver tries multiple initial guesses until the RMSE of the residual
+        falls below `rmse_threshold`.
+
+        If x0 is provided, it is tried first.
+        Otherwise, initial guesses are generated automatically.
+
+        random_seed controls reproducibility of initial guesses
+        """
 
         def gen_x0(x0_):
             if x0_ is not None:
@@ -222,20 +240,19 @@ class FitFunc:
             yield from self.generate_initial_points(random_seed=rng)
 
         rmse = float('inf')
-        retries = -1
-        for x0 in gen_x0(x0):
-            retries += 1
+        for retries, x0 in enumerate(gen_x0(x0)):
             sol = optimize.least_squares(self, x0=x0,
                                          bounds=(self.system.bounds_lower, self.system.bounds_upper),
                                          method='trf', ftol=1e-12, xtol=1e-12, gtol=1e-12,
                                          max_nfev=self.system.specs.n_vars * 200)
             rmse = np.sqrt(np.average(sol.fun**2))
             if rmse < rmse_threshold:
-                break
+                break  # acceptable solution found
         else:
-            logger.warning('Poor convergence! (rmse=%s)\n   Conditions: %s', rmse, self.cond)
-        assert retries >= 0
-
+            logger.warning(
+                'Poor convergence after %d retries (rmse=%g)\n   Conditions: %s',
+                retries, rmse, self.cond
+            )
         _, df = self(sol.x, return_all_spc=True)
         return SolverResults(
             sol=sol,
@@ -244,6 +261,16 @@ class FitFunc:
             spc_a=df['spc_a'].to_numpy(),
             retries=retries
         )
+
+    def _unpack_x(self, x: np.ndarray):
+        num_loga = self.system.specs.n_loga
+        num_solid = self.system.specs.n_solid
+        loga, n_solid = x[:num_loga], x[num_loga:num_loga + num_solid]
+        if len(x) > num_loga + num_solid:
+            I = x[-1]
+        else:
+            I = float('nan')
+        return loga, n_solid, I
 
 @dataclass(frozen=True)
 class SolverResults:
@@ -291,19 +318,24 @@ def solve_for_conditions(
     system: System,
     cond_list: t.Iterable[Conditions],
     rmse_thresh=1e-6,
-    rng=None
+    random_seed=None
     ) -> list[SolverResults]:
-    """Solves equilibrium problems for a list of different conditions.
-    To accelerate convergence, the solution obtained is used as an initial point for the next step."""
+    """
+    Solves equilibrium problems for a sequence of conditions.
+
+    The solution from the previous condition is reused as the initial guess
+    for the next one (warm start), if convergence was successful.
+    """
     x0: np.ndarray | None = None
     results: list[SolverResults] = []
 
-    for cond in cond_list:
+    for i, cond in enumerate(cond_list):
         f = FitFunc(system, cond)
-        s = f.solve(x0=x0, rmse_threshold=rmse_thresh, random_seed=rng)
+        s = f.solve(x0=x0, rmse_threshold=rmse_thresh, random_seed=random_seed)
         results.append(s)
+        logger.info("Step %d: rmse=%g", i, s.rmse)
         if s.rmse < rmse_thresh:
-            x0 = s.sol.x
+            x0 = s.sol.x.copy()
         else:
             x0 = None
 
