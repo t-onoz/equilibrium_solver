@@ -9,15 +9,15 @@ temperature:
   298.15
 components:
   - name: proton
-    base: H+
+    base_species: H+
     constraint: charge
     charge: 1
   - name: carbonate
-    base: CO2(g)
+    base_species: CO2(g)
     constraint: direct
     charge: 0
   - name: calcium
-    base: Ca2+
+    base_species: Ca2+
     constraint: total
     charge: +2
 species:
@@ -49,61 +49,61 @@ equilibria:
   - name: water autoionization
     logK: -14.00
     DH: 55.8
-    composition:
+    stoichiometry:
       H+: 1
       OH-: 1
   - name: CO2 dissolution
     logK: -1.47
     DH: -19.7
-    composition:
+    stoichiometry:
       CO2aq: 1
       CO2(g): -1
   - name: CO2 deprotonation 1
     logK: -6.3
     DH: 9.2
-    composition:
+    stoichiometry:
       CO2aq: -1
       H+: 1
       HCO3-: 1
   - name: CO2 deprotonation 2
     logK: -10.33
     DH: 14.6
-    composition:
+    stoichiometry:
       H+: 1
       CO3^2-: 1
       HCO3-: -1
   - name: calcium complex 1
     logK: 3.20
     DH: 16.7
-    composition:
+    stoichiometry:
       "[CaCO3]aq": 1
       Ca2+: -1
       CO3^2-: -1
   - name: calcium complex 2
     logK: 1.27
     DH: 20.9
-    composition:
+    stoichiometry:
       "[CaHCO3]aq": 1
       Ca2+: -1
       HCO3-: -1
   - name: CaCO3(s) precipitation
     logK: -8.48
     DH: -8.4
-    composition:
+    stoichiometry:
       Ca2+: 1
       CO3^2-: 1
       CaCO3(s): -1
   - name: CaOH complex formation
     logK: 1.30
     DH: 8.4
-    composition:
+    stoichiometry:
       Ca2+: -1
       OH-: -1
       "[CaOH]+aq": 1
   - name: Ca(OH)2 precipitation
     logK: -5.19
     DH: -18.0
-    composition:
+    stoichiometry:
       Ca2+: 1
       OH-: 2
       Ca(OH)2(s): -1

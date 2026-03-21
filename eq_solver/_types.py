@@ -9,3 +9,11 @@ if t.TYPE_CHECKING:
 else:
     Float = t.Union[float, np.ndarray]
     Int = t.Union[int, np.ndarray]
+
+ActivityModel = t.Literal[
+    'debye_huckel',
+    'ex_debye_huckel',
+    'davies',
+    'truesdell_jones',
+    'none',
+]

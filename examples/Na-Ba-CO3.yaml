@@ -9,23 +9,23 @@ temperature:
   298.15
 components:
   - name: proton
-    base: H+
+    base_species: H+
     constraint: charge
     charge: 1
   - name: carbonate
-    base: CO3^2-
+    base_species: CO3^2-
     constraint: total
     charge: -2
   - name: barium
-    base: Ba2+
+    base_species: Ba2+
     constraint: total
     charge: +2
   - name: sodium
-    base: Na+
+    base_species: Na+
     constraint: direct
     charge: +1
   - name: chloride
-    base: Cl-
+    base_species: Cl-
     constraint: direct
     charge: -1
 species:
@@ -55,41 +55,41 @@ equilibria:
   - name: water autoionization
     logK: -14.00
     DH: 57.0
-    composition:
+    stoichiometry:
       H+: 1
       OH-: 1
   - name: CO2 deprotonation 1
     logK: -6.3
     DH: 9.2
-    composition:
+    stoichiometry:
       CO2aq: -1
       H+: 1
       HCO3-: 1
   - name: CO2 deprotonation 2
     logK: -10.33
     DH: 14.6
-    composition:
+    stoichiometry:
       H+: 1
       CO3^2-: 1
       HCO3-: -1
   - name: barium complex 1
     logK: 2.71
     DH: 16.7
-    composition:
+    stoichiometry:
       "[BaCO3]aq": 1
       Ba2+: -1
       CO3^2-: -1
   - name: barium complex 2
     logK: 0.98
     DH: 25.4
-    composition:
+    stoichiometry:
       "[BaHCO3]aq": 1
       Ba2+: -1
       HCO3-: -1
   - name: BaCO3(s) precipitation
     logK: -8.57
     DH: 4.2
-    composition:
+    stoichiometry:
       Ba2+: 1
       CO3^2-: 1
       BaCO3(s): -1
