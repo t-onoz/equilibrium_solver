@@ -170,7 +170,22 @@ class System:
                        components=new_components,
                        equilibria=new_equilibria,)
 
-
+    def without_species(self, *names: str) -> System:
+        """Remove species from the system, and return a new System object."""
+        l = [spc for spc in self.species if spc.name in names]
+        if not l:
+            raise ValueError(f"Species {names} not in system")
+        spc_to_remove = l
+        if any(spc is cpt.base_species for cpt in self.components for spc in spc_to_remove):
+            raise ValueError(f'Cannot remove {spc_to_remove} because some of them are base of a component')
+        new_species = tuple(spc_ for spc_ in self.species if spc_ not in spc_to_remove)
+        new_equilibria = tuple(
+            eq for eq in self.equilibria
+            if not any(spc in eq.stoichiometry.keys() for spc in spc_to_remove)
+        )
+        return replace(self,
+                       species=new_species,
+                       equilibria=new_equilibria,)
 
     def stoichiometry_matrix_as_df(self) -> pd.DataFrame:
         return pd.DataFrame(self.stoichiometry_matrix,
