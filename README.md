@@ -16,4 +16,5 @@
 - redox half reactions (equilibrium containing e-)
 
 ## Usage
-- please check jupyter notebooks in "examples" folder. `NaHCO3.ipynb` is relatively simple.
+- please check jupyter notebooks in "examples" folder.
+
