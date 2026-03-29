@@ -149,6 +149,29 @@ class System:
         equilibria = tuple(eq.with_temperature(self.temperature, to_T) for eq in self.equilibria)
         return replace(self, equilibria=equilibria, temperature=to_T)
 
+    def without_component(self, name: str) -> System:
+        """Remove a component from the system, and return a new System object."""
+        l = [cpt for cpt in self.components if cpt.name == name]
+        if not l :
+            raise ValueError(f"Component {name} not in system")
+        cpt = l[0]
+        idx_cpt = self.components.index(cpt)
+        new_species = tuple(
+            spc for spc, c in zip(self.species, self.stoichiometry_matrix[:, idx_cpt]) if c == 0.0
+        )
+        new_components = tuple(
+            cpt_ for cpt_ in self.components if cpt_ is not cpt
+        )
+        new_equilibria = tuple(
+            eq for eq in self.equilibria if all(spc in new_species for spc in eq.stoichiometry.keys())
+        )
+        return replace(self,
+                       species=new_species,
+                       components=new_components,
+                       equilibria=new_equilibria,)
+
+
+
     def stoichiometry_matrix_as_df(self) -> pd.DataFrame:
         return pd.DataFrame(self.stoichiometry_matrix,
                             columns=[cpt.base_species.name for cpt in self.components],
