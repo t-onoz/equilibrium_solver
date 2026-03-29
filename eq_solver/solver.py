@@ -8,6 +8,7 @@ import numpy as np
 import numpy.typing as npt
 import pandas as pd
 from scipy import optimize
+from scipy.stats import qmc
 
 from eq_solver.system import System, Constraint, Phase, Species
 
@@ -199,21 +200,26 @@ class FitFunc:
         """
         rng = np.random.default_rng(random_seed)
 
-        xs: list[npt.NDArray[np.float64]] = []
         rmses: list[float] = []
         condnums: list[float] = []
-        for _ in range(random_points):
-            x = rng.uniform(low=self.system.bounds_lower, high=self.system.bounds_upper)
+
+        sampler = qmc.LatinHypercube(d=len(self.system.bounds_lower), rng=rng)
+        u = sampler.random(n=random_points)
+        xs = qmc.scale(u, self.system.bounds_lower, self.system.bounds_upper)
+
+        for x in xs:
             rmse = np.sqrt(np.average(self(x)**2))
-            J = self.jac(x, dx=1e-3)
-            xs.append(x)
             rmses.append(rmse)
-            try:
-                cn = np.linalg.cond(J)
-            except np.linalg.LinAlgError:
-                logger.info('Failed to calculate condition number.\n  Conditions: %s',
-                            self.cond,
-                            exc_info=True)
+            if rmse < np.inf:
+                J = self.jac(x, dx=1e-3)
+                try:
+                    cn = np.linalg.cond(J)
+                except np.linalg.LinAlgError:
+                    logger.info('Failed to calculate condition number.\n  Conditions: %s',
+                                self.cond,
+                                exc_info=True)
+                    cn = float('inf')
+            else:
                 cn = float('inf')
             condnums.append(cn)
 
