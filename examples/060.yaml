@@ -1,0 +1,180 @@
+activity_model:
+  # available values:
+  #   none, debye_huckel, ex_debye_huckel, davies, truesdell_jones
+  # for ex_debye_huckel, "a" value (in nm) for each species is required
+  # for truesdell_jones, "a" (in nm) and "b" values for each species is required
+  davies
+temperature:
+  # provide in Kelvin
+  298.15
+components:
+  - name: proton
+    base_species: H+
+    constraint: charge
+    base_charge: 1
+  - name: copper
+    base_species: Cu2+
+    constraint: total
+    base_charge: 2
+  - name: sulfate
+    base_species: SO4^2-
+    constraint: total
+    base_charge: -2
+  - name: ammonia
+    base_species: NH3
+    constraint: total
+    base_charge: 0
+species:
+  - name: H+
+    phase: liquid
+  - name: OH-
+    phase: liquid
+  - name: Cu2+
+    phase: liquid
+  - name: SO4^2-
+    phase: liquid
+  - name: HSO4^-
+    phase: liquid
+  - name: NH4+
+    phase: liquid
+  - name: NH3
+    phase: liquid
+  - name: Cu(OH)2(s)
+    phase: solid
+  - name: "[Cu(OH)]+"
+    phase: liquid
+  - name: "[Cu(OH)2]aq"
+    phase: liquid
+  - name: "[Cu(OH)3]-"
+    phase: liquid
+  - name: "[Cu(OH)4]2-"
+    phase: liquid
+  - name: "[Cu2(OH)2]2+"
+    phase: liquid
+  - name: "[Cu3(OH)4]2+"
+    phase: liquid
+  - name: "[CuSO4]"
+    phase: liquid
+  - name: Cu(OH)1.5(SO4)0.25
+    phase: solid
+  - name: "[Cu(NH3)]2+"
+    phase: liquid
+  - name: "[Cu(NH3)2]2+"
+    phase: liquid
+  - name: "[Cu(NH3)3]2+"
+    phase: liquid
+  - name: "[Cu(NH3)4]2+"
+    phase: liquid
+equilibria:
+  - name: water autoionization
+    logK: -14.00
+    DH: 55.8
+    stoichiometry:
+      H+: 1
+      OH-: 1
+  - name: ammonia protonation
+    logK: 9.244
+    DH: -52
+    stoichiometry:
+      NH4+: 1
+      NH3: -1
+      H+: -1
+  - name: sulfate protonation
+    logK: 1.99
+    DH: 22.6
+    stoichiometry:
+      HSO4^-: 1
+      H+: -1
+      SO4^2-: -1
+  - name: copper hydrolysis 1
+    logK: 6.5
+    DH: -20.5
+    stoichiometry:
+      "[Cu(OH)]+": 1
+      Cu2+: -1
+      OH-: -1
+  - name: copper hydrolysis 2
+    logK: 11.8
+    DH: 0.0
+    stoichiometry:
+      "[Cu(OH)2]aq": 1
+      Cu2+: -1
+      OH-: -2
+  - name: copper hydrolysis 3
+    logK: 14.5
+    DH: 0.0
+    stoichiometry:
+      "[Cu(OH)3]-": 1
+      Cu2+: -1
+      OH-: -3
+  - name: copper hydrolysis 4
+    logK: 15.6
+    DH: 0.0
+    stoichiometry:
+      "[Cu(OH)4]2-": 1
+      Cu2+: -1
+      OH-: -4
+  - name: copper hydrolysis 5
+    logK: 17.4
+    DH: -35.1
+    stoichiometry:
+      "[Cu2(OH)2]2+": 1
+      Cu2+: -2
+      OH-: -2
+  - name: copper hydrolysis 6
+    logK: 35.2
+    DH: -117.2
+    stoichiometry:
+      "[Cu3(OH)4]2+": 1
+      Cu2+: -3
+      OH-: -4
+  - name: copper hydroxide
+    logK: -19.32
+    DH: 55.2
+    stoichiometry:
+      Cu(OH)2(s): -1
+      Cu2+: 1
+      OH-: 2
+  - name: copper ammine complexation 1
+    logK: 4.02
+    DH: -20.1
+    stoichiometry:
+      "[Cu(NH3)]2+": 1
+      Cu2+: -1
+      NH3: -1
+  - name: copper ammine complexation 2
+    logK: 7.4
+    DH: -42.3
+    stoichiometry:
+      "[Cu(NH3)2]2+": 1
+      Cu2+: -1
+      NH3: -2
+  - name: copper ammine complexation 3
+    logK: 10.2
+    DH: -62.3
+    stoichiometry:
+      "[Cu(NH3)3]2+": 1
+      Cu2+: -1
+      NH3: -3
+  - name: copper ammine complexation 4
+    logK: 12.3
+    DH: -86.6
+    stoichiometry:
+      "[Cu(NH3)4]2+": 1
+      Cu2+: -1
+      NH3: -4
+  - name: copper sulfate complexation
+    logK: 2.36
+    DH: 8.8
+    stoichiometry:
+      "[CuSO4]": 1
+      Cu2+: -1
+      SO4^2-: -1
+  - name: basic copper sulfate
+    logK: -17.19
+    DH: -33.5
+    stoichiometry:
+      Cu(OH)1.5(SO4)0.25: -1
+      Cu2+: 1
+      OH-: 1.5
+      SO4^2-: 0.25
