@@ -95,9 +95,9 @@ class System:
         # dof test
         if len(self.species) != len(self.equilibria) + len(self.components):
             raise ValueError(f"dof mismatch (len(species) != len(equilibria) + len(components))\n"
-                             f"  species: {self.species}\n"
-                             f"  equilibria: {self.equilibria}\n"
-                             f"  components: {self.components}")
+                             f"  species: {len(self.species)}\n"
+                             f"  equilibria: {len(self.equilibria)}\n"
+                             f"  components: {len(self.components)}")
 
         # check temperature
         if self.temperature < 273.15 or self.temperature > 373.15:
