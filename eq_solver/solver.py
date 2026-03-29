@@ -1,6 +1,7 @@
 from __future__ import annotations
 import typing as t
 import logging
+import warnings
 from collections.abc import Sequence
 from dataclasses import dataclass, field
 import numpy as np
@@ -130,8 +131,14 @@ class FitFunc:
         # r1: solid-liquid equilibrium
         # described using "complementary conditions"
         _m = system.spc_phase == Phase.SOLID
+        # calculate scaling factor for solid species
+        _c = np.where(system.cpt_cstr == Constraint.TOTAL, cond.values, np.nan)
+        with np.errstate(divide='ignore', invalid='ignore'), warnings.catch_warnings():
+            warnings.filterwarnings('ignore', r'All-NaN (slice|axis) encountered')
+            _v = np.nanmin(np.abs(_c / system.stoichiometry_matrix), axis=1)
+        _v = np.where(np.isnan(_v) | (_v == 0), 1.0, _v)
         r1 = fischer_burmeister(
-            spc_c[_m],  # mole of solid phase
+            spc_c[_m] / _v[_m],  # mole of solid phase
             -spc_log_a[_m],  # degree of "undersaturation"
         )
 
@@ -179,7 +186,7 @@ class FitFunc:
 
     def generate_initial_points(
             self,
-            random_points: int = 10,
+            random_points: int = 100,
             random_seed: np.random.Generator | int | None = None,
             condnum_threshold: float | int = 1000.0
     ) -> list[npt.NDArray[np.float64]]:
@@ -218,6 +225,7 @@ class FitFunc:
     def solve(
             self,
             x0: npt.NDArray[np.float64] | None = None,
+            max_retries: int = 10,
             rmse_threshold: float = 1e-6,
             random_seed: np.random.Generator | int | None=None,
     ) -> SolverResults:
@@ -234,10 +242,11 @@ class FitFunc:
         """
 
         def gen_x0(x0_):
+            random_points = max(max_retries, 100)
             if x0_ is not None:
                 yield x0_
             rng = np.random.default_rng(random_seed)
-            yield from self.generate_initial_points(random_seed=rng)
+            yield from self.generate_initial_points(random_seed=rng, random_points=random_points)
 
         rmse = float('inf')
         for retries, x0 in enumerate(gen_x0(x0)):
@@ -248,7 +257,9 @@ class FitFunc:
             rmse = np.sqrt(np.average(sol.fun**2))
             if rmse < rmse_threshold:
                 break  # acceptable solution found
-        else:
+            if retries >= max_retries:
+                break
+        if rmse >= rmse_threshold:
             logger.warning(
                 'Poor convergence after %d retries (rmse=%g)\n   Conditions: %s',
                 retries, rmse, self.cond

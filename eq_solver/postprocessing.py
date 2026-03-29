@@ -35,6 +35,7 @@ def _c_total_aq(r: SolverResults) -> dict[str, t.Any]:
     }
 
 def get_total_aq(x: SolverResults | Sequence[SolverResults]) -> pd.DataFrame:
+    """calculates total dissolved concentration of each component"""
     records = []
     l = [x] if isinstance(x, SolverResults) else x
     for r in l:
@@ -48,6 +49,7 @@ def get_distribution(
         cpt_name: str,
         relative: bool = False,
 ) -> pd.DataFrame:
+    """calculates distribution of concentration of a given component (including solid phases)"""
     records =[]
     l = [x] if isinstance(x, SolverResults) else x
     for r in l:
@@ -57,7 +59,7 @@ def get_distribution(
         records.append(d)
     return pd.DataFrame.from_records(records)
 
-def get_all(x: SolverResults | Sequence[SolverResults]) -> pd.DataFrame:
+def get_summary(x: SolverResults | Sequence[SolverResults]) -> pd.DataFrame:
     records = []
     l = [x] if isinstance(x, SolverResults) else x
     for r in l:

@@ -5,59 +5,59 @@ activity_model:
   # for truesdell_jones, "a" (in nm) and "b" values for each species is required
   davies
 temperature:
-  # must be in Kelvin
+  # provide in Kelvin
   298.15
 components:
   - name: proton
-    base_species: H+
     constraint: charge
-    charge: 1
+    base_species: H+
+    base_charge: 1
   - name: carbonate
-    base_species: CO2(g)
-    constraint: direct
-    charge: 0
-  - name: calcium
-    base_species: Ca2+
     constraint: total
-    charge: +2
+    base_species: CO3^2-
+    base_charge: -2
+  - name: barium
+    constraint: total
+    base_species: Ba2+
+    base_charge: +2
+  - name: sodium
+    constraint: direct
+    base_species: Na+
+    base_charge: +1
+  - name: chloride
+    constraint: direct
+    base_species: Cl-
+    base_charge: -1
 species:
   - name: H+
     phase: liquid
   - name: OH-
     phase: liquid
-  - name: CO2(g)
-    phase: gas
+  - name: Na+
+    phase: liquid
   - name: CO2aq
     phase: liquid
   - name: HCO3-
     phase: liquid
   - name: CO3^2-
     phase: liquid
-  - name: Ca2+
+  - name: Ba2+
     phase: liquid
-  - name: "[CaCO3]aq"
+  - name: "[BaCO3]aq"
     phase: liquid
-  - name: "[CaHCO3]aq"
+  - name: "[BaHCO3]aq"
     phase: liquid
-  - name: CaCO3(s)
+  - name: BaCO3(s)
     phase: solid
-  - name: "[CaOH]+aq"
+  - name: Cl-
     phase: liquid
-  - name: Ca(OH)2(s)
-    phase: solid
 equilibria:
   - name: water autoionization
     logK: -14.00
-    DH: 55.8
+    DH: 57.0
     stoichiometry:
       H+: 1
       OH-: 1
-  - name: CO2 dissolution
-    logK: -1.47
-    DH: -19.7
-    stoichiometry:
-      CO2aq: 1
-      CO2(g): -1
   - name: CO2 deprotonation 1
     logK: -6.3
     DH: 9.2
@@ -72,38 +72,24 @@ equilibria:
       H+: 1
       CO3^2-: 1
       HCO3-: -1
-  - name: calcium complex 1
-    logK: 3.20
+  - name: barium complex 1
+    logK: 2.71
     DH: 16.7
     stoichiometry:
-      "[CaCO3]aq": 1
-      Ca2+: -1
+      "[BaCO3]aq": 1
+      Ba2+: -1
       CO3^2-: -1
-  - name: calcium complex 2
-    logK: 1.27
-    DH: 20.9
+  - name: barium complex 2
+    logK: 0.98
+    DH: 25.4
     stoichiometry:
-      "[CaHCO3]aq": 1
-      Ca2+: -1
+      "[BaHCO3]aq": 1
+      Ba2+: -1
       HCO3-: -1
-  - name: CaCO3(s) precipitation
-    logK: -8.48
-    DH: -8.4
+  - name: BaCO3(s) precipitation
+    logK: -8.57
+    DH: 4.2
     stoichiometry:
-      Ca2+: 1
+      Ba2+: 1
       CO3^2-: 1
-      CaCO3(s): -1
-  - name: CaOH complex formation
-    logK: 1.30
-    DH: 8.4
-    stoichiometry:
-      Ca2+: -1
-      OH-: -1
-      "[CaOH]+aq": 1
-  - name: Ca(OH)2 precipitation
-    logK: -5.19
-    DH: -18.0
-    stoichiometry:
-      Ca2+: 1
-      OH-: 2
-      Ca(OH)2(s): -1
+      BaCO3(s): -1

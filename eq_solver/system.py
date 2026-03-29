@@ -39,9 +39,9 @@ class Species:
 @dataclass(frozen=True)
 class Component:
     name: str
-    base_species: Species
     constraint: Constraint
-    charge: int
+    base_species: Species
+    base_charge: int
 
 @dataclass(frozen=True)
 class Equilibrium:
@@ -117,7 +117,7 @@ class System:
         self.stoichiometry_matrix =  np.round(r.Aprime, 4)
         self.logK = np.round(r.T @ [eq.logK for eq in self.equilibria], 4)
         # solid and gas must be charge neutral
-        cpt_charge = np.array([cpt.charge for cpt in self.components])
+        cpt_charge = np.array([cpt.base_charge for cpt in self.components])
         spc_charge = self.stoichiometry_matrix @ cpt_charge
         for i, sp in enumerate(self.species):
             if sp.phase != Phase.LIQUID and spc_charge[i] != 0.0:
@@ -128,7 +128,7 @@ class System:
         self.cpt_base_idx = np.array([
             self.species.index(cpt.base_species) for cpt in self.components
         ], dtype=np.uint16)
-        self.spc_charge = self.stoichiometry_matrix @ np.array([cpt.charge for cpt in self.components])
+        self.spc_charge = self.stoichiometry_matrix @ np.array([cpt.base_charge for cpt in self.components])
         self.spc_phase = np.array([sp.phase for sp in self.species], dtype=np.uint8)
         self.spc_logK = np.asarray(self.logK, dtype=float)
         self.gamma = partial(
