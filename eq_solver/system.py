@@ -218,8 +218,8 @@ class System:
         return np.sum(0.5 * spc_c[_m] * self.spc_charge[_m] ** 2) + 0.5 * c_bg * z_bg**2
 
     @classmethod
-    def from_yaml(cls, path) -> System:
-        with open(path) as f:
+    def from_yaml(cls, path, encoding='utf-8') -> System:
+        with open(path, encoding=encoding) as f:
             config = yaml.safe_load(f)
         return cls.from_config(config)
 
