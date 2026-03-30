@@ -208,7 +208,8 @@ class FitFunc:
         xs = qmc.scale(u, self.system.bounds_lower, self.system.bounds_upper)
 
         for x in xs:
-            rmse = np.sqrt(np.average(self(x)**2))
+            with np.errstate(all='ignore'):
+                rmse = np.sqrt(np.average(self(x)**2))
             rmses.append(rmse)
             if rmse < np.inf:
                 J = self.jac(x, dx=1e-3)
@@ -222,7 +223,11 @@ class FitFunc:
             else:
                 cn = float('inf')
             condnums.append(cn)
-
+        if np.all(rmses == np.inf):
+            raise ValueError('RMSE is infinite at all the points. This might be due to ill-defined problem.')
+        if np.all(condnums == np.inf):
+            logger.warning('Condition number of Jacobian matrix is infinite at all the points. '
+                           'This might be due to ill-defined problem.')
         idx_sorted = np.argsort(rmses)
         l1 = [xs[i] for i in idx_sorted if condnums[i] < condnum_threshold]
         l2 = [xs[i] for i in idx_sorted if condnums[i] >= condnum_threshold]
